@@ -1,6 +1,6 @@
 window.APP_CONFIG = {
     _k: [
-        atob('ZGQzOTlmYTM4MDg2NDFiM2I4NTRmMGMzZTVhYTE1YWI='),
-        atob('MDU3YzYzYmVhZDNjNGU1YmE1NDlkMjA1MWVlM2MzYjM=')
+        atob('YThlNzhlNzZhZDVkM2VkYTBlOTVmNTUxZGNjYmRlNTQ='),
+        atob('YzZjYWYzNDI1OWM0M2NkNTEwYjk1OWQ0NzFhNzMwZDE=')
     ]
 };
