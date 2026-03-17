@@ -1,0 +1,52 @@
+{
+  "Países": [
+    "Estados Unidos",
+    "México",
+    "Perú",
+    "Argentina",
+    "España",
+    "Brasil",
+    "Chile",
+    "Colombia"
+  ],
+  "Negocios": [
+    "Emprendimientos",
+    "Pequeñas empresas",
+    "Ventas online",
+    "Ideas de negocio",
+    "Inversiones",
+    "Economía personal"
+  ],
+  "Tecnología": [
+    "Inteligencia artificial",
+    "Celulares",
+    "Aplicaciones móviles",
+    "Redes sociales",
+    "Seguridad en internet",
+    "Nuevas tecnologías"
+  ],
+  "Trabajo": [
+    "Trabajo remoto",
+    "Ofertas de empleo",
+    "Consejos laborales",
+    "Freelance",
+    "Emprender desde casa"
+  ],
+  "Empresas": [
+    "Apple",
+    "Google",
+    "Microsoft",
+    "Amazon",
+    "Tesla",
+    "Meta",
+    "TikTok"
+  ],
+  "Tendencias": [
+    "Innovación",
+    "Compras online",
+    "Creadores de contenido",
+    "Educación digital",
+    "Automatización",
+    "Estilo de vida digital"
+  ]
+}
