@@ -179,9 +179,8 @@
             const fetchNews = async (currentPage = 1) => {
                 for (const key of API_KEYS) {
                     try {
-                        const endpoint = search
-                            ? `https://gnews.io/api/v4/search?q=${encodeURIComponent(search)}&lang=${lang}&sortby=${sort}&max=${ARTICLES_PER_PAGE}&page=${currentPage}&apikey=${key}`
-                            : `https://gnews.io/api/v4/top-headlines?lang=${lang}&max=${ARTICLES_PER_PAGE}&page=${currentPage}&apikey=${key}`;
+                        const defaultQuery = lang === 'es' ? 'noticias' : 'news';
+                        const endpoint = `https://gnews.io/api/v4/search?q=${encodeURIComponent(search || defaultQuery)}&lang=${lang}&sortby=${sort}&max=${ARTICLES_PER_PAGE}&page=${currentPage}&apikey=${key}`;
                         const res = await fetch(endpoint);
                         if (!res.ok) throw new Error(res.status);
                         const data = await res.json();
