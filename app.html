@@ -162,6 +162,21 @@
             const [totalArticles, setTotalArticles] = useState(0);
             const ARTICLES_PER_PAGE = 10;
 
+            const openArticle = (art) => {
+                setSelected(art);
+                window.scrollTo(0, 0);
+                window.history.pushState({ article: true }, '');
+            };
+
+            useEffect(() => {
+                const handlePopState = () => {
+                    setSelected(null);
+                    window.scrollTo(0, 0);
+                };
+                window.addEventListener('popstate', handlePopState);
+                return () => window.removeEventListener('popstate', handlePopState);
+            }, []);
+
             useEffect(() => {
                 const loadQuickData = async () => {
                     try {
@@ -172,6 +187,27 @@
                 };
                 loadQuickData();
             }, []);
+
+            const timeAgo = (dateStr) => {
+                const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
+                if (diff < 60) return 'Hace un momento';
+                if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+                if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
+                if (diff < 2592000) return `Hace ${Math.floor(diff / 86400)} días`;
+                return `Hace ${Math.floor(diff / 2592000)} meses`;
+            };
+
+            const formatDate = (dateStr) => {
+                return new Date(dateStr).toLocaleDateString('es-ES', { 
+                    day: 'numeric', month: 'long', year: 'numeric' 
+                });
+            };
+
+            const formatDateShort = (dateStr) => {
+                return new Date(dateStr).toLocaleDateString('es-ES', { 
+                    day: 'numeric', month: 'numeric', year: 'numeric' 
+                });
+            };
 
             const fetchNews = async (currentPage = 1) => {
                 try {
@@ -279,10 +315,7 @@
                                 {articles.map((art, i) => (
                                     <div
                                         key={i}
-                                        onClick={() => {
-                                            setSelected(art);
-                                            window.scrollTo(0, 0);
-                                        }}
+                                        onClick={() => openArticle(art)}
                                         className="material-card shadow-sm flex overflow-hidden group h-40"
                                         >
                                         {/* Imagen izquierda */}
@@ -304,9 +337,18 @@
                                             <h3 className="text-[13px] font-bold leading-snug mb-2 line-clamp-4 md:line-clamp-3 font-mulish  text-gray-900">
                                             {art.title}
                                             </h3>
-                                            <div className="flex items-center mt-auto text-xs font-bold text-gray-400 uppercase tracking-tighter">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a8a8a8" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-calendar-week mr-1"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg>
-                                            {new Date(art.publishedAt).toLocaleDateString()}
+                                            
+                                            <div className="flex items-center justify-between mt-auto">
+                                                <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-tighter">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a8a8a8" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /></svg>
+                                                    {/* Solo números en móvil: 17/3/2026 */}
+                                                    <span className="block md:hidden">{formatDateShort(art.publishedAt)}</span>
+                                                    {/* Texto completo en desktop: 17 de marzo de 2026 */}
+                                                    <span className="hidden md:block">{formatDate(art.publishedAt)}</span>
+                                                </div>
+                                                <span className="text-xs font-bold text-brand whitespace-nowrap ml-2">
+                                                    {timeAgo(art.publishedAt)}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
