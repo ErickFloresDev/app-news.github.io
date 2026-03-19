@@ -1,52 +1,72 @@
 {
-  "Países": [
-    "Estados Unidos",
-    "México",
-    "Perú",
-    "Argentina",
-    "España",
-    "Brasil",
-    "Chile",
-    "Colombia"
-  ],
-  "Negocios": [
-    "Emprendimientos",
-    "Pequeñas empresas",
-    "Ventas online",
-    "Ideas de negocio",
-    "Inversiones",
-    "Economía personal"
-  ],
-  "Tecnología": [
-    "Inteligencia artificial",
-    "Celulares",
-    "Aplicaciones móviles",
-    "Redes sociales",
-    "Seguridad en internet",
-    "Nuevas tecnologías"
-  ],
-  "Trabajo": [
-    "Trabajo remoto",
-    "Ofertas de empleo",
-    "Consejos laborales",
-    "Freelance",
-    "Emprender desde casa"
-  ],
-  "Empresas": [
-    "Apple",
-    "Google",
-    "Microsoft",
-    "Amazon",
-    "Tesla",
-    "Meta",
-    "TikTok"
-  ],
-  "Tendencias": [
-    "Innovación",
-    "Compras online",
-    "Creadores de contenido",
-    "Educación digital",
-    "Automatización",
-    "Estilo de vida digital"
-  ]
+  "Categorías": {
+    "icon": "fa-solid fa-newspaper",
+    "items": {
+      "General": "general",
+      "Mundo": "world",
+      "Nación": "nation",
+      "Negocios": "business",
+      "Tecnología": "technology",
+      "Entretenimiento": "entertainment",
+      "Deportes": "sports",
+      "Ciencia": "science",
+      "Salud": "health"
+    }
+  },
+  "Idioma": {
+    "icon": "fa-solid fa-language",
+    "items": {
+      "Español": "es",
+      "Inglés": "en",
+      "Portugués": "pt",
+      "Francés": "fr",
+      "Alemán": "de",
+      "Italiano": "it",
+      "Chino": "zh",
+      "Japonés": "ja",
+      "Árabe": "ar",
+      "Ruso": "ru",
+      "Hindi": "hi",
+      "Coreano": "ko"
+    }
+  },
+  "País": {
+    "icon": "fa-solid fa-earth-americas",
+    "items": {
+      "Argentina": "ar",
+      "Australia": "au",
+      "Brasil": "br",
+      "Canadá": "ca",
+      "Chile": "cl",
+      "Colombia": "co",
+      "España": "es",
+      "Estados Unidos": "us",
+      "Francia": "fr",
+      "Alemania": "de",
+      "India": "in",
+      "Italia": "it",
+      "Japón": "jp",
+      "México": "mx",
+      "Perú": "pe",
+      "Portugal": "pt",
+      "Reino Unido": "gb",
+      "Rusia": "ru"
+    }
+  },
+  "Temas": {
+    "icon": "fa-solid fa-fire",
+    "items": {
+      "Inteligencia artificial": "inteligencia artificial",
+      "Celulares": "celulares",
+      "Redes sociales": "redes sociales",
+      "Trabajo remoto": "trabajo remoto",
+      "Emprendimientos": "emprendimientos",
+      "Inversiones": "inversiones",
+      "Apple": "Apple",
+      "Google": "Google",
+      "Tesla": "Tesla",
+      "Meta": "Meta",
+      "Criptomonedas": "criptomonedas"
+    }
+  }
 }

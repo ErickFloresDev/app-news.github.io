@@ -8,7 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;900&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -125,18 +126,35 @@
             );
         };
 
-        const CustomDropdown = ({ label, value, options, onChange }) => {
+        const SortDropdown = ({ value, onChange }) => {
             const [open, setOpen] = useState(false);
+            const ref = useRef(null);
+
+            useEffect(() => {
+                const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+                document.addEventListener('mousedown', handleClick);
+                return () => document.removeEventListener('mousedown', handleClick);
+            }, []);
+
             return (
-                <div className="relative">
-                    <button onClick={() => setOpen(!open)} className="px-4 py-2 gap-2 bg-white border border-gray-200 rounded-2xl flex items-center w-full">
-                        <span className="text-xs font-black text-brand ">{label}</span>
-                        <span className="text-xs font-bold text-gray-700 ">{options.find(o => o.value === value)?.label}</span>
+                <div className="relative" ref={ref}>
+                    <button
+                        onClick={() => setOpen(!open)}
+                        className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-brand-soft hover:text-brand transition-all text-gray-500"
+                    >
+                        <i className="fa-solid fa-ellipsis-vertical text-sm"></i>
                     </button>
                     {open && (
-                        <div className="absolute top-full mt-2 w-full bg-white border border-gray-100 rounded-2xl shadow-sm z-50 overflow-hidden">
-                            {options.map(o => (
-                                <button key={o.value} onClick={() => { onChange(o.value); setOpen(false); }} className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-brand-soft hover:text-brand">
+                        <div className="absolute right-0 top-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden min-w-[140px]">
+                            <div className="px-4 py-2 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">Ordenar por</div>
+                            {[{label: 'Más reciente', value: 'publishedAt'}, {label: 'Relevancia', value: 'relevancy'}].map(o => (
+                                <button
+                                    key={o.value}
+                                    onClick={() => { onChange(o.value); setOpen(false); }}
+                                    className={`w-full text-left px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-2
+                                        ${value === o.value ? 'text-brand bg-brand-soft' : 'hover:bg-brand-soft hover:text-brand text-gray-600'}`}
+                                >
+                                    {value === o.value && <i className="fa-solid fa-check text-[10px]"></i>}
                                     {o.label}
                                 </button>
                             ))}
@@ -156,13 +174,20 @@
             const [quickSearchData, setQuickSearchData] = useState({});
             const [error, setError] = useState(false);
             const searchRef = useRef(null);
+            const scrollPositionRef = useRef(0);
 
             //paginador
             const [page, setPage] = useState(1);
             const [totalArticles, setTotalArticles] = useState(0);
             const ARTICLES_PER_PAGE = 10;
 
+            const [activeTab, setActiveTab] = useState('Categorías');
+            const [category, setCategory] = useState('general');
+            const [country, setCountry] = useState('');
+            
+
             const openArticle = (art) => {
+                scrollPositionRef.current = window.scrollY;
                 setSelected(art);
                 window.scrollTo(0, 0);
                 window.history.pushState({ article: true }, '');
@@ -171,7 +196,7 @@
             useEffect(() => {
                 const handlePopState = () => {
                     setSelected(null);
-                    window.scrollTo(0, 0);
+                    setTimeout(() => window.scrollTo(0, scrollPositionRef.current), 0);
                 };
                 window.addEventListener('popstate', handlePopState);
                 return () => window.removeEventListener('popstate', handlePopState);
@@ -211,8 +236,15 @@
 
             const fetchNews = async (currentPage = 1) => {
                 try {
-                    const defaultQuery = lang === 'es' ? 'noticias' : 'news';
-                    const endpoint = `/.netlify/functions/news?q=${encodeURIComponent(search || defaultQuery)}&lang=${lang}&sortby=${sort}&max=${ARTICLES_PER_PAGE}&page=${currentPage}`;
+                    let endpoint;
+                    if (activeTab === 'Categorías') {
+                        endpoint = `/.netlify/functions/news?category=${category}&lang=${lang}&max=${ARTICLES_PER_PAGE}&page=${currentPage}`;
+                    } else if (activeTab === 'País') {
+                        endpoint = `/.netlify/functions/news?category=${category}&country=${country}&lang=${lang}&max=${ARTICLES_PER_PAGE}&page=${currentPage}`;
+                    } else {
+                        const q = search || (lang === 'es' ? 'noticias' : 'news');
+                        endpoint = `/.netlify/functions/news?q=${encodeURIComponent(q)}&lang=${lang}&sortby=${sort}&max=${ARTICLES_PER_PAGE}&page=${currentPage}`;
+                    }
                     const res = await fetch(endpoint);
                     if (!res.ok) throw new Error(res.status);
                     const data = await res.json();
@@ -226,10 +258,10 @@
                 }
             };
 
-            useEffect(() => { 
-                setPage(1); 
-                fetchNews(1); 
-            }, [search, lang, sort]);
+            useEffect(() => {
+                setPage(1);
+                fetchNews(1);
+            }, [search, lang, sort, category, country]);
 
             return (
                 <div className="min-h-screen pb-20">
@@ -237,52 +269,76 @@
                     <header className={`bg-white/90 backdrop-blur-md fixed top-0 left-0 right-0 z-[100] border-b border-gray-100 px-4 py-3 transition-all duration-300 
                         ${selected ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
                         
-                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-4 items-center">
-                            <span 
-                                onClick={() => { setSelected(null); setSearch(''); window.scrollTo(0,0); }} 
-                                className="text-xl font-black font-mulish text-brand cursor-pointer"
-                            >
-                                CORE<span className="text-gray-800">NEWS</span>
-                            </span>
-                            <div className="relative flex-1 w-full" ref={searchRef}>
-                                <button
-                                    className="w-full bg-gray-100 rounded-2xl px-5 py-2 text-sm font-bold border-2 border-transparent hover:border-gray-200 hover:bg-white transition-all outline-none font-nunito text-left flex items-center justify-between"
-                                    onClick={() => setShowSearchBox(!showSearchBox)}
+                        <div className="max-w-7xl mx-auto flex flex-col gap-2">
+                            <div className="flex items-center justify-between gap-3">
+                                <span
+                                    onClick={() => { setSelected(null); setSearch(''); setCategory('general'); setCountry(''); setActiveTab('Categorías'); window.scrollTo(0,0); }}
+                                    className="text-2xl font-black font-mulish text-brand cursor-pointer whitespace-nowrap"
                                 >
-                                    <span className="text-gray-500">{search || 'Seleccionar categoría...'}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
-                                        fill="#a8a8a8" 
-                                        className={`transition-transform duration-300 ${showSearchBox ? 'rotate-180' : ''}`}>
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M18.707 8.293a1 1 0 0 1 0 1.414l-6 6a1 1 0 0 1 -1.414 0l-6 -6a1 1 0 0 1 1.414 -1.414l5.293 5.293l5.293 -5.293a1 1 0 0 1 1.414 0" />
-                                    </svg>
-                                </button>
+                                    CORE<span className="text-gray-800">NEWS</span>
+                                </span>
+                                <SortDropdown value={sort} onChange={setSort} />
+                            </div>
+                            
+                            {/* Fila 1: Logo + tabs principales + sort */}
+                            <div className="flex items-center gap-3 mt-1">
+                                <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-1 py-1">
+                                    {Object.keys(quickSearchData).map((tab) => (
+                                        <button
+                                            key={tab}
+                                            onClick={() => setActiveTab(tab)}
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-sm font-black whitespace-nowrap transition-all
+                                                ${activeTab === tab
+                                                    ? 'bg-brand-soft text-brand border border-brand/20'
+                                                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
+                                        >
+                                            <i className={quickSearchData[tab].icon + ' text-sm'}></i>
+                                            <span className="">{tab}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
-                                {showSearchBox && (
-                                    <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-[24px] shadow-2xl p-5 z-[110] animate-pop overflow-y-auto">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <span className="text-xs font-black text-gray-500 uppercase tracking-widest">Explorador Rápido</span>
-                                            <button onClick={() => setShowSearchBox(false)} className="text-brand font-bold text-xs uppercase">Cerrar</button>
-                                        </div>
-                                        {Object.entries(quickSearchData).map(([cat, items]) => (
-                                            <AccordionItem key={cat} title={cat} items={items} onSelect={(val) => { setSearch(val); setShowSearchBox(false); }} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="flex gap-2 w-full md:w-auto">
-                                <CustomDropdown label="Idioma" value={lang} onChange={setLang} options={[{label:'Español', value:'es'}, {label:'Inglés', value:'en'}]} />
-                                <CustomDropdown label="Orden" value={sort} onChange={setSort} options={[{label:'Reciente', value:'publishedAt'}, {label:'Relevancia', value:'relevancy'}]} />
-                            </div>
+                            {/* Fila 2: Sub-badges de la tab activa */}
+                            {quickSearchData[activeTab] && (
+                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5 mt-2">
+                                    {Object.entries(quickSearchData[activeTab].items).map(([label, value]) => {
+                                        const isActive =
+                                            (activeTab === 'Idioma' && lang === value) ||
+                                            (activeTab === 'País' && country === value) ||
+                                            (activeTab === 'Categorías' && category === value) ||
+                                            (activeTab === 'Temas' && search === value);
+                                        return (
+                                            <button
+                                                key={value}
+                                                onClick={() => {
+                                                    if (activeTab === 'Idioma') { setLang(value); }
+                                                    else if (activeTab === 'País') { setCountry(value); setSearch(''); }
+                                                    else if (activeTab === 'Categorías') { setCategory(value); setSearch(''); }
+                                                    else { setSearch(value); setCountry(''); }
+                                                    setPage(1);
+                                                    window.scrollTo(0, 0);
+                                                }}
+                                                className={`px-3 py-1.5 rounded-2xl text-sm font-black whitespace-nowrap transition-all border
+                                                    ${isActive
+                                                        ? 'bg-brand text-white border-brand'
+                                                        : 'bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand'}`}
+                                            >
+                                                {label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </header>
 
-                    <main className={`max-w-5xl mx-auto px-4 transition-all duration-500 ${selected ? 'mt-10' : 'mt-48 md:mt-24'}`}>
+                    <main className={`max-w-5xl mx-auto px-4 transition-all duration-500 ${selected ? 'mt-10' : 'mt-48'}`}>
                         {error ? (
                             <ErrorState />
                         ) : selected ? (
                             <article className="max-w-2xl mx-auto animate-pop pb-10">
-                                    <button onClick={() => {setSelected(null); window.scrollTo(0,0);}} className="text-gray-600 font-bold text-sm uppercase mb-8 flex items-center gap-2 hover:translate-x-[-4px] transition-transform">
+                                    <button onClick={() => {setSelected(null); setTimeout(() => window.scrollTo(0, scrollPositionRef.current), 0); }} className="text-gray-600 font-bold text-sm uppercase mb-8 flex items-center gap-2 hover:translate-x-[-4px] transition-transform">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#615460" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-arrow-narrow-left"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l14 0" /><path d="M5 12l4 4" /><path d="M5 12l4 -4" /></svg>
                                         Volver al feed
                                     </button>
