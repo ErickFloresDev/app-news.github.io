@@ -11,8 +11,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- DESPUÉS -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script>
@@ -39,13 +40,14 @@
         }
     </script>
     <style>
-        body {background-image: url('https://images.unsplash.com/photo-1476242906366-d8eb64c2f661?w=2400&q=80');background-size: cover;background-position: center;background-attachment: fixed;color: #1a1c1e;font-family: 'Nunito', sans-serif;}
-        body::before { content: ''; position: fixed; inset: 0; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); background: rgba(0, 0, 0, 0.45); z-index: 0; }
+        body {background-image: url('https://images.unsplash.com/photo-1476242906366-d8eb64c2f661?w=1200&q=50');background-size: cover;background-position: center;background-attachment: fixed;color: #1a1c1e;font-family: 'Nunito', sans-serif;}
+        body::before { content: ''; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.60); /* más oscuro para compensar sin blur */ z-index: 0; }
         #root { position: relative; z-index: 1; }
         .material-card { background: white; border-radius: 5px; border: 1px solid #e1e3e8; transition: all 0.2s ease; cursor: pointer; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .animate-pop { animation: pop 0.2s ease-out; }
         .header-transition { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
+        .card-news { will-change: transform; }
         @keyframes pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
@@ -57,7 +59,7 @@
 
         const proxyImage = (url) => {
             if (!url) return null;
-            return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&default=1`;
+            return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&default=1&n=-1&w=400&q=70`;
         };
 
         const SafeImage = ({ src, className, alt }) => {
@@ -85,9 +87,11 @@
                 );
             }
             
-            if (imgState === 'loading') { /* tu skeleton */ }
+            if (imgState === 'loading') { 
+                return <div className={`${className} bg-white/10 animate-pulse`} />;
+             }
 
-            return <img src={proxiedSrc} alt={alt} className={`${className} animate-pop`} />;
+            return <img src={proxiedSrc} alt={alt}  loading="lazy"  className={`${className} animate-pop`} />;
         };
 
         const ErrorState = () => (
@@ -195,14 +199,26 @@
                 window.history.pushState({ article: true }, '');
             };
 
+
+            const shouldRestoreScroll = useRef(false);
+
+            // Reemplaza el useEffect del popstate por esto:
             useEffect(() => {
                 const handlePopState = () => {
+                    shouldRestoreScroll.current = true;
                     setSelected(null);
-                    setTimeout(() => window.scrollTo(0, scrollPositionRef.current), 0);
                 };
                 window.addEventListener('popstate', handlePopState);
                 return () => window.removeEventListener('popstate', handlePopState);
             }, []);
+
+            // Agrega este useLayoutEffect nuevo:
+            React.useLayoutEffect(() => {
+                if (!selected && shouldRestoreScroll.current) {
+                    window.scrollTo(0, scrollPositionRef.current);
+                    shouldRestoreScroll.current = false;
+                }
+            }, [selected]);
 
             useEffect(() => {
                 const loadQuickData = async () => {
@@ -335,7 +351,7 @@
                         </div>
                     </header>
 
-                    <main className={`max-w-5xl mx-auto px-4 transition-all duration-500 ${selected ? 'mt-10' : 'mt-48'}`}>
+                    <main className={`max-w-5xl mx-auto px-4 transition-[margin] duration-500 ${selected ? 'mt-10' : 'mt-48'}`}>
                         {error ? (
                             <ErrorState />
                         ) : selected ? (
@@ -374,7 +390,7 @@
                                     <div
                                         key={i}
                                         onClick={() => openArticle(art)}
-                                        className="group relative flex overflow-hidden rounded-2xl cursor-pointer
+                                        className="card-news group relative flex overflow-hidden rounded-2xl cursor-pointer
                                         backdrop-blur-xl bg-white/[0.08] border border-white/[0.22]
                                         shadow-[0_8px_32px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.15)]
                                         transition-all duration-300 ease-[cubic-bezier(.23,1,.32,1)]
@@ -407,8 +423,7 @@
                                                 <div className="flex-1 h-px bg-white/15" />
                                             </div>
 
-                                            {/* Título */}
-                                            <h3 className="text-[13px] font-bold leading-[1.45] text-white/90 line-clamp-2 font-mulish flex-1">
+                                            <h3 className="text-[13px] font-bold leading-[1.45] text-white/90 line-clamp-2 overflow-hidden font-mulish flex-1 min-h-0">
                                                 {art.title}
                                             </h3>
 
