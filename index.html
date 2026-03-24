@@ -213,13 +213,13 @@
                 loadQuickData();
             }, []);
 
-            const timeAgo = (dateStr) => {
-                const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
-                if (diff < 60) return 'Hace un momento';
-                if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
-                if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
-                if (diff < 2592000) return `Hace ${Math.floor(diff / 86400)} días`;
-                return `Hace ${Math.floor(diff / 2592000)} meses`;
+            const publishedTime = (dateStr) => {
+                if (!dateStr) return '';
+                return new Date(dateStr).toLocaleTimeString('es-PE', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'America/Lima'
+                });
             };
 
             const formatDate = (dateStr) => {
@@ -402,8 +402,8 @@
                                                     {/* Texto completo en desktop: 17 de marzo de 2026 */}
                                                     <span className="hidden md:block">{formatDate(art.publishedAt)}</span>
                                                 </div>
-                                                <span className="text-xs font-bold text-brand whitespace-nowrap ml-2">
-                                                    {timeAgo(art.publishedAt)}
+                                                <span className="text-[11px] font-semibold text-white/70 whitespace-nowrap">
+                                                    {publishedTime(art.publishedAt)}
                                                 </span>
                                             </div>
                                         </div>
